@@ -1,27 +1,22 @@
-require('dotenv').config();
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const client = new Client({ 
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers] 
-});
+const fs = require('fs');
+require('dotenv').config();
 
-// نظام إدارة الأوامر (لضمان عدم تداخل الأوامر)
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers] });
 client.commands = new Collection();
 
-// اختصارات الكلام (خاصة بكل سيرفر إن أردت)
-client.shortcuts = {
-    '!قوانين': 'يرجى مراجعة القوانين في قناة #القوانين',
-    '!رابط': 'رابط السيرفر هو: ...'
-};
+const commandFiles = fs.readdirSync('./').filter(file => file.endsWith('.js') && file !== 'index.js');
+for (const file of commandFiles) {
+    const command = require(`./${file}`);
+    client.commands.set(command.name, command);
+}
 
 client.on('messageCreate', (message) => {
-    if (message.author.bot) return;
-
-    // تشغيل الاختصارات
-    if (client.shortcuts[message.content]) {
-        message.reply(client.shortcuts[message.content]);
-    }
-
-    // هنا يتم إضافة منطق أوامر الإدارة (باند/كيك) والألعاب
+    if (!message.content.startsWith('!') || message.author.bot) return;
+    const args = message.content.slice(1).split(/ +/);
+    const commandName = args.shift().toLowerCase();
+    const command = client.commands.get(commandName);
+    if (command) command.execute(message, args);
 });
 
 client.login(process.env.TOKEN);
