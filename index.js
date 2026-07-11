@@ -1,29 +1,27 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
-
-// إعدادات الصلاحيات للبوت ليتمكن من قراءة الرسائل
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const client = new Client({ 
-    intents: [
-        GatewayIntentBits.Guilds, 
-        GatewayIntentBits.GuildMessages, 
-        GatewayIntentBits.MessageContent
-    ] 
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers] 
 });
 
-// رسالة عند تشغيل البوت
-client.once('ready', () => {
-    console.log(`تم تسجيل الدخول بنجاح باسم ${client.user.tag}!`);
-});
+// نظام إدارة الأوامر (لضمان عدم تداخل الأوامر)
+client.commands = new Collection();
 
-// الرد على الرسائل
+// اختصارات الكلام (خاصة بكل سيرفر إن أردت)
+client.shortcuts = {
+    '!قوانين': 'يرجى مراجعة القوانين في قناة #القوانين',
+    '!رابط': 'رابط السيرفر هو: ...'
+};
+
 client.on('messageCreate', (message) => {
-    // تجاهل رسائل البوت نفسه
     if (message.author.bot) return;
 
-    if (message.content === '!ping') {
-        message.reply('البوت يعمل بكفاءة!');
+    // تشغيل الاختصارات
+    if (client.shortcuts[message.content]) {
+        message.reply(client.shortcuts[message.content]);
     }
+
+    // هنا يتم إضافة منطق أوامر الإدارة (باند/كيك) والألعاب
 });
 
-// تسجيل الدخول باستخدام التوكن من إعدادات Render
 client.login(process.env.TOKEN);
