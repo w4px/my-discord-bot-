@@ -1,7 +1,10 @@
 module.exports = {
-    name: 'roll',
+    name: 'game',
     execute(message, args) {
-        const result = Math.floor(Math.random() * 6) + 1;
-        message.reply(`🎲 طلعت لك: ${result}`);
+        if (args[0] === 'roll') {
+            message.reply(`🎲 النتيجة: ${Math.floor(Math.random() * 6) + 1}`);
+        } else if (args[0] === 'coin') {
+            message.reply(Math.random() > 0.5 ? '🪙 رأس' : '🪙 كتابة');
+        }
     }
 };
